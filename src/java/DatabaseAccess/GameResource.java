@@ -1,53 +1,65 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package DatabaseAccess;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.Produces;
+import DatabaseEntityClasses.Game;
+import DatabaseEntityClasses.Gamerequest;
+import com.google.gson.Gson;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
  * REST Web Service
  *
- * @author user
+ * @author dapfel
  */
 @Path("game")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class GameResource {
 
-    @Context
-    private UriInfo context;
+    private ChessDbController chessDB;
 
-    /**
-     * Creates a new instance of GameResource
-     */
     public GameResource() {
+        chessDB = new ChessDbController();
     }
-
-    /**
-     * Retrieves representation of an instance of DatabaseAccess.GameResource
-     * @return an instance of java.lang.String
-     */
+    
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getJson() {
-        //TODO return proper representation object
-        throw new UnsupportedOperationException();
+    @Path("lastMove/{gameID}")
+    public String getLastMove(@PathParam("gameID") Integer gameID) {
+        String move = chessDB.getLastMove(gameID);
+        chessDB.close();
+        
+        return new Gson().toJson(move);
     }
-
-    /**
-     * PUT method for updating or creating an instance of GameResource
-     * @param content representation for the resource
-     */
+    
     @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void putJson(String content) {
+    @Path("makeMove/{gameID}")
+    public String makeMove(@PathParam("gameID") Integer gameID, String moveJson) {
+        String move = new Gson().fromJson(moveJson, String.class);
+        try {
+            move = chessDB.makeMove(gameID, move);
+        }
+        catch (Exception e) {
+            move = null;
+        }
+        finally {
+        chessDB.close();
+        }
+        return new Gson().toJson(move);
+    }
+    
+    @DELETE
+    @Path("{gameID}")
+    public String endGame(@PathParam("gameID") Integer gameID) {
+        Game game = chessDB.endGame(gameID);
+        chessDB.close();
+        
+        return new Gson().toJson(game);
     }
 }
