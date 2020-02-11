@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -64,7 +65,7 @@ public class GameRequestResource {
        Game game;
        Gamerequest gameRequest = new Gson().fromJson(gameRequestJson, Gamerequest.class);
        try {
-           game = chessDB.acceptRequest(gameRequest);
+           game = chessDB.acceptGameRequest(gameRequest);
        }
        catch (Exception e) {
            game = null;
@@ -78,9 +79,9 @@ public class GameRequestResource {
     @GET
     @Path("whiteStartGame/{username}")
     public String whiteStartGame(@PathParam("username") String username){         
-        Game game = chessDB.whiteStartGame(username);
+        Gamerequest request = chessDB.whiteStartGame(username);
         chessDB.close();
-        return new Gson().toJson(game);
+        return new Gson().toJson(request);
     }
     
     @PUT
@@ -90,4 +91,13 @@ public class GameRequestResource {
         chessDB.close();
         return new Gson().toJson(game);
         }
+        
+    @DELETE
+    @Path("reset/{username}")
+    public String reset(@PathParam("username") String username) {
+        String response = chessDB.reset(username);
+        chessDB.close();
+        
+        return new Gson().toJson(response);
+    }
 }

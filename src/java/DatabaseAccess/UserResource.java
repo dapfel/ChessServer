@@ -54,7 +54,7 @@ public class UserResource {
     }
     
     @PUT
-    @Path("updateUserProfile/{username}")
+    @Path("update/{username}")
     public String updateUserProfile(@PathParam("username") String username, String newUserJson) {
         User newUser = new Gson().fromJson(newUserJson, User.class);
         try {
