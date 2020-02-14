@@ -17,11 +17,11 @@ import javax.validation.constraints.Size;
  * @author dapfel
  */
 @Entity
-@Table(name = "games")
+@Table(name = "game")
 @NamedQueries({
-    @NamedQuery(name = "Games.findAll", query = "SELECT g FROM Games g")
-    , @NamedQuery(name = "Games.findByGameID", query = "SELECT g FROM Games g WHERE g.gameID = :gameID")
-    , @NamedQuery(name = "Games.findByMove", query = "SELECT g FROM Games g WHERE g.move = :move")})
+    @NamedQuery(name = "Game.findAll", query = "SELECT g FROM Game g")
+    , @NamedQuery(name = "Game.findByGameID", query = "SELECT g FROM Game g WHERE g.gameID = :gameID")
+    , @NamedQuery(name = "Game.findByMove", query = "SELECT g FROM Game g WHERE g.move = :move")})
 public class Game implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -71,15 +71,12 @@ public class Game implements Serializable {
             return false;
         }
         Game other = (Game) object;
-        if ((this.gameID == null && other.gameID != null) || (this.gameID != null && !this.gameID.equals(other.gameID))) {
-            return false;
-        }
-        return true;
+        return !((this.gameID == null && other.gameID != null) || (this.gameID != null && !this.gameID.equals(other.gameID)));
     }
 
     @Override
     public String toString() {
-        return "DatabaseEntityClasses.Games[ gameID=" + gameID + " ]";
+        return "DatabaseEntityClasses.Game[ gameID=" + gameID + " ]";
     }
     
 }

@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author dapfel
  */
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 @NamedQueries({
     @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u")
     , @NamedQuery(name = "User.findByUserID", query = "SELECT u FROM User u WHERE u.userID = :userID")

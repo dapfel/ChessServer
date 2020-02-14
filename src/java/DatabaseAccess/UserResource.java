@@ -54,11 +54,11 @@ public class UserResource {
     }
     
     @PUT
-    @Path("update/{username}")
-    public String updateUserProfile(@PathParam("username") String username, String newUserJson) {
+    @Path("update/{userID}")
+    public String updateUserProfile(@PathParam("userID") int userID, String newUserJson) {
         User newUser = new Gson().fromJson(newUserJson, User.class);
         try {
-            newUser = chessDB.updateUserProfile(username, newUser);
+            newUser = chessDB.updateUserProfile(userID, newUser);
         }
         catch (Exception e) {
             newUser = null;

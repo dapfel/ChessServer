@@ -24,22 +24,22 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 public class GameRequestResource {
 
-    private ChessDbController chessDB;
+    private final ChessDbController chessDB;
 
     public GameRequestResource() {
         chessDB = new ChessDbController();
     }
     
     @GET
-    @Path("{username}")
-    public String getGameRequests(@PathParam("username") String username) {
+    @Path("{userID}")
+    public String getGameRequests(@PathParam("userID") int userID) {
         
-        List<Gamerequest> requests = chessDB.getGameRequests(username);
+        List<Gamerequest> requests = chessDB.getGameRequests(userID);
         chessDB.close();
         List<User> requestUsers = new ArrayList<>();
-        for (Gamerequest request : requests ) {
+        requests.forEach((request) -> {
             requestUsers.add(request.getUser1());
-        }
+        });
         return new Gson().toJson(new UsernameList(requestUsers));
     }
     
@@ -76,7 +76,7 @@ public class GameRequestResource {
        return new Gson().toJson(game);
     }
     
-    @GET
+    @PUT
     @Path("whiteStartGame/{username}")
     public String whiteStartGame(@PathParam("username") String username){         
         Gamerequest request = chessDB.whiteStartGame(username);
@@ -93,9 +93,9 @@ public class GameRequestResource {
         }
         
     @DELETE
-    @Path("reset/{username}")
-    public String reset(@PathParam("username") String username) {
-        String response = chessDB.reset(username);
+    @Path("reset/{userID}/{availability}")
+    public String reset(@PathParam("userID") int userID, @PathParam("availability") String availability) {
+        String response = chessDB.reset(userID, availability);
         chessDB.close();
         
         return new Gson().toJson(response);
