@@ -1,5 +1,6 @@
 package DatabaseEntityClasses;
 
+import DatabaseAccess.User;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
@@ -14,26 +15,23 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author dapfel
  */
 @Entity
-@Table(name = "user")
+@Table(name = "userprofile")
 @NamedQueries({
-    @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u")
-    , @NamedQuery(name = "User.findByUserID", query = "SELECT u FROM User u WHERE u.userID = :userID")
-    , @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u WHERE u.username = :username")
-    , @NamedQuery(name = "User.findByPassword", query = "SELECT u FROM User u WHERE u.password = :password")
-    , @NamedQuery(name = "User.findByWins", query = "SELECT u FROM User u WHERE u.wins = :wins")
-    , @NamedQuery(name = "User.findByLosses", query = "SELECT u FROM User u WHERE u.losses = :losses")
-    , @NamedQuery(name = "User.findByAvailable", query = "SELECT u FROM User u WHERE u.available = :available")
-    , @NamedQuery(name = "User.findByDraws", query = "SELECT u FROM User u WHERE u.draws = :draws")})
-@XmlRootElement
-public class User implements Serializable {
+    @NamedQuery(name = "UserProfileEntity.findAll", query = "SELECT u FROM UserProfileEntity u")
+    , @NamedQuery(name = "UserProfileEntity.findByUserID", query = "SELECT u FROM UserProfileEntity u WHERE u.userID = :userID")
+    , @NamedQuery(name = "UserProfileEntity.findByUsername", query = "SELECT u FROM UserProfileEntity u WHERE u.username = :username")
+    , @NamedQuery(name = "UserProfileEntity.findByPassword", query = "SELECT u FROM UserProfileEntity u WHERE u.password = :password")
+    , @NamedQuery(name = "UserProfileEntity.findByWins", query = "SELECT u FROM UserProfileEntity u WHERE u.wins = :wins")
+    , @NamedQuery(name = "UserProfileEntity.findByLosses", query = "SELECT u FROM UserProfileEntity u WHERE u.losses = :losses")
+    , @NamedQuery(name = "UserProfileEntity.findByAvailable", query = "SELECT u FROM UserProfileEntity u WHERE u.available = :available")
+    , @NamedQuery(name = "UserProfileEntity.findByDraws", query = "SELECT u FROM UserProfileEntity u WHERE u.draws = :draws")})
+public class UserProfileEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -56,15 +54,20 @@ public class User implements Serializable {
     @Column(name = "available")
     private Boolean available;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
-    private List<Gamerequest> gamerequestList;
+    private List<GameRequestEntity> requestedGameList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user1")
-    private List<Gamerequest> gamerequestList1;
+    private List<GameRequestEntity> requesterGameList;
 
-    public User() {
+    public UserProfileEntity() {
     }
 
-    public User(Integer userID) {
-        this.userID = userID;
+    public UserProfileEntity(User user, String password) {
+        this.userID = user.getUserID();
+        this.username = user.getUsername();
+        this.password = password;
+        this.wins = user.getWins();
+        this.losses = user.getLosses();
+        this.draws = user.getDraws();
     }
 
     public Integer getUserID() {
@@ -122,23 +125,21 @@ public class User implements Serializable {
     public void setAvailable(Boolean available) {
         this.available = available;
     }
-    
-    @XmlTransient
-    public List<Gamerequest> getGamerequestList() {
-        return gamerequestList;
+
+    public List<GameRequestEntity> getRequestedGameList() {
+        return requestedGameList;
     }
 
-    public void setGamerequestList(List<Gamerequest> gamerequestList) {
-        this.gamerequestList = gamerequestList;
+    public void setRequestedGameList(List<GameRequestEntity> requestedGameList) {
+        this.requestedGameList = requestedGameList;
     }
 
-    @XmlTransient
-    public List<Gamerequest> getGamerequestList1() {
-        return gamerequestList1;
+    public List<GameRequestEntity> getRequesterGameList() {
+        return requesterGameList;
     }
 
-    public void setGamerequestList1(List<Gamerequest> gamerequestList1) {
-        this.gamerequestList1 = gamerequestList1;
+    public void setRequesterGameList(List<GameRequestEntity> requesterGameList) {
+        this.requesterGameList = requesterGameList;
     }
 
     @Override
@@ -151,19 +152,14 @@ public class User implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof User)) {
+        if (!(object instanceof UserProfileEntity)) {
             return false;
         }
-        User other = (User) object;
+        UserProfileEntity other = (UserProfileEntity) object;
         if ((this.userID == null && other.userID != null) || (this.userID != null && !this.userID.equals(other.userID))) {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "DatabaseEntityClasses.Users[ userID=" + userID + " ]";
     }
     
 }

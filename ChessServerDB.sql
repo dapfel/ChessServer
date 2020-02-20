@@ -1,8 +1,8 @@
 DROP TABLE GameRequest;
-DROP TABLE User;
+DROP TABLE UserProfile;
 DROP TABLE Game;
 
-CREATE TABLE User(
+CREATE TABLE UserProfile(
    UserID INT AUTO_INCREMENT,
    username varchar (40) UNIQUE,
    password varchar (30),
@@ -24,6 +24,6 @@ CREATE TABLE GameRequest (
    requestedUser varchar (40),
    gameID INT,
    PRIMARY KEY (requestingUser, requestedUser),
-   FOREIGN KEY (requestedUser) REFERENCES User (username),
-   FOREIGN KEY (requestingUser) REFERENCES USER (username)
+   FOREIGN KEY (requestedUser) REFERENCES UserProfile (username),
+   FOREIGN KEY (requestingUser) REFERENCES UserProfile (username)
 );

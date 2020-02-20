@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
  * @author user
  */
 @Embeddable
-public class GamerequestPK implements Serializable {
+public class GameRequestPKEntity implements Serializable {
 
     @Basic(optional = false)
     @NotNull
@@ -25,10 +25,10 @@ public class GamerequestPK implements Serializable {
     @Column(name = "requestedUser")
     private String requestedUser;
 
-    public GamerequestPK() {
+    public GameRequestPKEntity() {
     }
 
-    public GamerequestPK(String requestingUser, String requestedUser) {
+    public GameRequestPKEntity(String requestingUser, String requestedUser) {
         this.requestingUser = requestingUser;
         this.requestedUser = requestedUser;
     }
@@ -60,10 +60,10 @@ public class GamerequestPK implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof GamerequestPK)) {
+        if (!(object instanceof GameRequestPKEntity)) {
             return false;
         }
-        GamerequestPK other = (GamerequestPK) object;
+        GameRequestPKEntity other = (GameRequestPKEntity) object;
         if ((this.requestingUser == null && other.requestingUser != null) || (this.requestingUser != null && !this.requestingUser.equals(other.requestingUser))) {
             return false;
         }
@@ -73,9 +73,5 @@ public class GamerequestPK implements Serializable {
         return true;
     }
 
-    @Override
-    public String toString() {
-        return "DatabaseEntityClasses.GamerequestPK[ requestingUser=" + requestingUser + ", requestedUser=" + requestedUser + " ]";
-    }
     
 }

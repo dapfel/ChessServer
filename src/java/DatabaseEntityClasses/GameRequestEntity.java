@@ -17,40 +17,40 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "gamerequest")
 @NamedQueries({
-    @NamedQuery(name = "Gamerequest.findAll", query = "SELECT g FROM Gamerequest g")
-    , @NamedQuery(name = "Gamerequest.findByRequestingUser", query = "SELECT g FROM Gamerequest g WHERE g.gamerequestPK.requestingUser = :requestingUser")
-    , @NamedQuery(name = "Gamerequest.findByRequestedUser", query = "SELECT g FROM Gamerequest g WHERE g.gamerequestPK.requestedUser = :requestedUser")
-    , @NamedQuery(name = "Gamerequest.findByGameID", query = "SELECT g FROM Gamerequest g WHERE g.gameID = :gameID")})
-public class Gamerequest implements Serializable {
+    @NamedQuery(name = "GameRequestEntity.findAll", query = "SELECT g FROM GameRequestEntity g")
+    , @NamedQuery(name = "GameRequestEntity.findByRequestingUser", query = "SELECT g FROM GameRequestEntity g WHERE g.gamerequestPK.requestingUser = :requestingUser")
+    , @NamedQuery(name = "GameRequestEntity.findByRequestedUser", query = "SELECT g FROM GameRequestEntity g WHERE g.gamerequestPK.requestedUser = :requestedUser")
+    , @NamedQuery(name = "GameRequestEntity.findByGameID", query = "SELECT g FROM GameRequestEntity g WHERE g.gameID = :gameID")})
+public class GameRequestEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected GamerequestPK gamerequestPK;
+    protected GameRequestPKEntity gamerequestPK;
     @Column(name = "gameID")
     private Integer gameID;
     @JoinColumn(name = "requestedUser", referencedColumnName = "username", insertable = false, updatable = false)
     @ManyToOne(optional = false)
-    private User user;
+    private UserProfileEntity user;
     @JoinColumn(name = "requestingUser", referencedColumnName = "username", insertable = false, updatable = false)
     @ManyToOne(optional = false)
-    private User user1;
+    private UserProfileEntity user1;
 
-    public Gamerequest() {
+    public GameRequestEntity() {
     }
 
-    public Gamerequest(GamerequestPK gamerequestPK) {
+    public GameRequestEntity(GameRequestPKEntity gamerequestPK) {
         this.gamerequestPK = gamerequestPK;
     }
 
-    public Gamerequest(String requestingUser, String requestedUser) {
-        this.gamerequestPK = new GamerequestPK(requestingUser, requestedUser);
+    public GameRequestEntity(String requestingUser, String requestedUser) {
+        this.gamerequestPK = new GameRequestPKEntity(requestingUser, requestedUser);
     }
 
-    public GamerequestPK getGamerequestPK() {
+    public GameRequestPKEntity getGamerequestPK() {
         return gamerequestPK;
     }
 
-    public void setGamerequestPK(GamerequestPK gamerequestPK) {
+    public void setGamerequestPK(GameRequestPKEntity gamerequestPK) {
         this.gamerequestPK = gamerequestPK;
     }
 
@@ -62,19 +62,19 @@ public class Gamerequest implements Serializable {
         this.gameID = gameID;
     }
 
-    public User getUser() {
+    public UserProfileEntity getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserProfileEntity user) {
         this.user = user;
     }
 
-    public User getUser1() {
+    public UserProfileEntity getUser1() {
         return user1;
     }
 
-    public void setUser1(User user1) {
+    public void setUser1(UserProfileEntity user1) {
         this.user1 = user1;
     }
 
@@ -88,19 +88,15 @@ public class Gamerequest implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Gamerequest)) {
+        if (!(object instanceof GameRequestEntity)) {
             return false;
         }
-        Gamerequest other = (Gamerequest) object;
+        GameRequestEntity other = (GameRequestEntity) object;
         if ((this.gamerequestPK == null && other.gamerequestPK != null) || (this.gamerequestPK != null && !this.gamerequestPK.equals(other.gamerequestPK))) {
             return false;
         }
         return true;
     }
 
-    @Override
-    public String toString() {
-        return "DatabaseEntityClasses.Gamerequest[ gamerequestPK=" + gamerequestPK + " ]";
-    }
     
 }

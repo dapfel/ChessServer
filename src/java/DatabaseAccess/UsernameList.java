@@ -1,6 +1,6 @@
 package DatabaseAccess;
 
-import DatabaseEntityClasses.User;
+import DatabaseEntityClasses.UserProfileEntity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +12,8 @@ public class UsernameList extends ArrayList<String> {
     public UsernameList() {
         super();
     }
-    public UsernameList(List<User> c) {
-        for (User user : c)
+    public UsernameList(List<UserProfileEntity> c) {
+        for (UserProfileEntity user : c)
             this.add(user.getUsername());
     }
 

@@ -1,13 +1,9 @@
 package DatabaseAccess;
 
-import DatabaseEntityClasses.Game;
-import DatabaseEntityClasses.Gamerequest;
 import com.google.gson.Gson;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -23,7 +19,7 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 public class GameResource {
 
-    private ChessDbController chessDB;
+    private final ChessDbController chessDB;
 
     public GameResource() {
         chessDB = new ChessDbController();
@@ -38,7 +34,7 @@ public class GameResource {
         return new Gson().toJson(move);
     }
     
-    @PUT
+    @POST
     @Path("makeMove/{gameID}")
     public String makeMove(@PathParam("gameID") Integer gameID, String moveJson) {
         String move = new Gson().fromJson(moveJson, String.class);
@@ -54,7 +50,7 @@ public class GameResource {
         return new Gson().toJson(move);
     }
     
-    @DELETE
+    @GET
     @Path("{gameID}")
     public String endGame(@PathParam("gameID") Integer gameID) {
         Game game = chessDB.endGame(gameID);

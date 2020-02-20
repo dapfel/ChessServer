@@ -19,10 +19,10 @@ import javax.validation.constraints.Size;
 @Entity
 @Table(name = "game")
 @NamedQueries({
-    @NamedQuery(name = "Game.findAll", query = "SELECT g FROM Game g")
-    , @NamedQuery(name = "Game.findByGameID", query = "SELECT g FROM Game g WHERE g.gameID = :gameID")
-    , @NamedQuery(name = "Game.findByMove", query = "SELECT g FROM Game g WHERE g.move = :move")})
-public class Game implements Serializable {
+    @NamedQuery(name = "GameEntity.findAll", query = "SELECT g FROM GameEntity g")
+    , @NamedQuery(name = "GameEntity.findByGameID", query = "SELECT g FROM GameEntity g WHERE g.gameID = :gameID")
+    , @NamedQuery(name = "GameEntity.findByMove", query = "SELECT g FROM GameEntity g WHERE g.move = :move")})
+public class GameEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -34,10 +34,10 @@ public class Game implements Serializable {
     @Column(name = "move")
     private String move;
 
-    public Game() {
+    public GameEntity() {
     }
 
-    public Game(Integer gameID) {
+    public GameEntity(Integer gameID) {
         this.gameID = gameID;
     }
 
@@ -67,16 +67,12 @@ public class Game implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Game)) {
+        if (!(object instanceof GameEntity)) {
             return false;
         }
-        Game other = (Game) object;
+        GameEntity other = (GameEntity) object;
         return !((this.gameID == null && other.gameID != null) || (this.gameID != null && !this.gameID.equals(other.gameID)));
     }
 
-    @Override
-    public String toString() {
-        return "DatabaseEntityClasses.Game[ gameID=" + gameID + " ]";
-    }
-    
+
 }

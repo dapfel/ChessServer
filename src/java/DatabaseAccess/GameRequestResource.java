@@ -1,14 +1,9 @@
 package DatabaseAccess;
 
-import DatabaseEntityClasses.*;
 import com.google.gson.Gson;
-import java.util.ArrayList;
-import java.util.List;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -34,19 +29,15 @@ public class GameRequestResource {
     @Path("{userID}")
     public String getGameRequests(@PathParam("userID") int userID) {
         
-        List<Gamerequest> requests = chessDB.getGameRequests(userID);
+        UsernameList requestingUsers = chessDB.getGameRequests(userID);
         chessDB.close();
-        List<User> requestUsers = new ArrayList<>();
-        requests.forEach((request) -> {
-            requestUsers.add(request.getUser1());
-        });
-        return new Gson().toJson(new UsernameList(requestUsers));
+        return new Gson().toJson(requestingUsers);
     }
     
     @POST
     @Path("")
     public String makeGameRequest(String requestJson) {
-       Gamerequest request = new Gson().fromJson(requestJson, Gamerequest.class);
+       GameRequest request = new Gson().fromJson(requestJson, GameRequest.class);
        try {
            request = chessDB.makeGameRequest(request);
        }
@@ -59,11 +50,11 @@ public class GameRequestResource {
        return new Gson().toJson(request);
     }
     
-    @PUT
+    @POST
     @Path("accept")
     public String acceptRequest(String gameRequestJson) {
        Game game;
-       Gamerequest gameRequest = new Gson().fromJson(gameRequestJson, Gamerequest.class);
+       GameRequest gameRequest = new Gson().fromJson(gameRequestJson, GameRequest.class);
        try {
            game = chessDB.acceptGameRequest(gameRequest);
        }
@@ -76,23 +67,23 @@ public class GameRequestResource {
        return new Gson().toJson(game);
     }
     
-    @PUT
-    @Path("whiteStartGame/{username}")
-    public String whiteStartGame(@PathParam("username") String username){         
-        Gamerequest request = chessDB.whiteStartGame(username);
+    @GET
+    @Path("whiteStartGame/{userID}")
+    public String whiteStartGame(@PathParam("userID") int userID){         
+        GameRequest request = chessDB.whiteStartGame(userID);
         chessDB.close();
         return new Gson().toJson(request);
     }
     
-    @PUT
+    @POST
     @Path("blackStartGame")
         public String blackStartGame(String gameRequestJson){         
-        Game game = chessDB.blackStartGame(new Gson().fromJson(gameRequestJson, Gamerequest.class));
+        Game game = chessDB.blackStartGame(new Gson().fromJson(gameRequestJson, GameRequest.class));
         chessDB.close();
         return new Gson().toJson(game);
         }
         
-    @DELETE
+    @GET
     @Path("reset/{userID}/{availability}")
     public String reset(@PathParam("userID") int userID, @PathParam("availability") String availability) {
         String response = chessDB.reset(userID, availability);

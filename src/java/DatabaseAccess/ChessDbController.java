@@ -20,17 +20,17 @@ public class ChessDbController {
     
     public User validateSignIn(String username, String password) {
         entityManager.getTransaction().begin();
-        TypedQuery<User> query = entityManager.createNamedQuery("User.findByUsername", User.class);
+        TypedQuery<UserProfileEntity> query = entityManager.createNamedQuery("UserProfileEntity.findByUsername", UserProfileEntity.class);
         query.setParameter("username", username);
-        List<User> results = query.getResultList();
-        User user = results.get(0);
+        List<UserProfileEntity> results = query.getResultList();
+        UserProfileEntity user = results.get(0);
         if (user == null) {// no such user exists
             entityManager.getTransaction().commit();
             return null;
         }
         if (user.getPassword().equals(password)) {
            entityManager.getTransaction().commit();
-           return user;
+           return new User(user);
         }
         else { // wrong password
             entityManager.getTransaction().commit();
@@ -38,12 +38,16 @@ public class ChessDbController {
         }
     }
     
-    public User addUser(User user) throws Exception {
-        if (user.getUsername().equals("") || user.getPassword().equals(""))
+    public User addUser(User user, String password) throws Exception {
+        if (user.getUsername().equals("") || password.equals(""))
             return null;
         try {
             entityManager.getTransaction().begin(); 
-            entityManager.persist(user);
+            UserProfileEntity newUser = new UserProfileEntity(user, password);
+            user.setWins(0);
+            user.setLosses(0);
+            user.setDraws(0);
+            entityManager.persist(newUser);
             entityManager.getTransaction().commit();
         }
         catch (Exception e) {
@@ -53,42 +57,43 @@ public class ChessDbController {
         return user;
     }
     
-    public User updateUserProfile(int userID, User newUser) {
+    public User updateUserProfile(int userID, String newPassword, User newUser) {
         entityManager.getTransaction().begin();
-        User user = entityManager.find(User.class, userID, LockModeType.PESSIMISTIC_WRITE);
+        UserProfileEntity user = entityManager.find(UserProfileEntity.class, userID, LockModeType.PESSIMISTIC_WRITE);
         if (user == null) {
             entityManager.getTransaction().commit();
             return null;
         }
         if (!(newUser.getUsername().equals("")))
             user.setUsername(newUser.getUsername());
-        if (!(newUser.getPassword().equals("")))
-            user.setPassword(newUser.getPassword());      
+        if (!(newPassword.equals("")))
+            user.setPassword(newPassword);      
         entityManager.getTransaction().commit();
         
-        return user;
+        return new User(user);
     }
     
-    public List<User> getAvailableUsers() {    
-        TypedQuery<User> query = entityManager.createNamedQuery("User.findByAvailable", User.class);
+    public UsernameList getAvailableUsers() {    
+        TypedQuery<UserProfileEntity> query = entityManager.createNamedQuery("UserProfileEntity.findByAvailable", UserProfileEntity.class);
         query.setParameter("available", true);
-        List<User> results = query.getResultList();
+        List<UserProfileEntity> results = query.getResultList();
         
-        return results;
+        return new UsernameList(results);
     }  
     
-    public Gamerequest makeGameRequest(Gamerequest request) {
-        User requestedUser;
+    public GameRequest makeGameRequest(GameRequest request) {
+        UserProfileEntity requestedUser;
         try {
             entityManager.getTransaction().begin();  
-            TypedQuery<User> query = entityManager.createNamedQuery("User.findByUsername", User.class);
-            query.setParameter("username", request.getGamerequestPK().getRequestedUser());
-            List<User> results = query.getResultList();
-            User user = results.get(0);
-            requestedUser = entityManager.find(User.class, user.getUserID(), LockModeType.PESSIMISTIC_WRITE);
+            TypedQuery<UserProfileEntity> query = entityManager.createNamedQuery("UserProfileEntity.findByUsername", UserProfileEntity.class);
+            query.setParameter("username", request.getRequestedUser());
+            List<UserProfileEntity> results = query.getResultList();
+            UserProfileEntity user = results.get(0);
+            requestedUser = entityManager.find(UserProfileEntity.class, user.getUserID());
             if (requestedUser.getAvailable()) {
-                request.setUser(requestedUser);
-                entityManager.persist(request);
+                GameRequestEntity newRequest = new GameRequestEntity(request.getRequestingUser(), request.getRequestedUser());
+                newRequest.setGameID(0); // set to invalid gameID to indicate that request has not yet been accepted
+                entityManager.persist(newRequest);
             }
             entityManager.getTransaction().commit();
         }
@@ -96,29 +101,32 @@ public class ChessDbController {
             return null;
         }
         
-        request.setUser(null); // so that client won't see other players private info
         return request;        
     }
     
-    public Game acceptGameRequest(Gamerequest gameRequest) throws Exception {
+    public Game acceptGameRequest(GameRequest gameRequest) throws Exception {
         Game game = null;
         try {
-            Gamerequest request = entityManager.find(Gamerequest.class, gameRequest.getGamerequestPK(), LockModeType.PESSIMISTIC_WRITE);
-            if (request == null)
+            entityManager.getTransaction().begin();
+            GameRequestPKEntity gameRequestPK = new GameRequestPKEntity(gameRequest.getRequestingUser(), gameRequest.getRequestedUser());
+            GameRequestEntity request = entityManager.find(GameRequestEntity.class, gameRequestPK, LockModeType.PESSIMISTIC_WRITE);
+            if (request == null) {
+                entityManager.getTransaction().commit();               
                 return null;
-            TypedQuery<User> query = entityManager.createNamedQuery("User.findByUsername", User.class);
-            query.setParameter("username", request.getGamerequestPK().getRequestingUser());
-            List<User> results = query.getResultList();
-            User user = results.get(0);           
-            if (user.getAvailable() && request.getGameID() == 0) { // the request still is valid and hasn't been asigned a game yet
-                entityManager.getTransaction().begin();  
-                game = new Game();
-                entityManager.persist(game);
-                entityManager.flush();
-                int gameID = game.getGameID();
-                request.setGameID(gameID);
-                entityManager.getTransaction().commit();
             }
+            TypedQuery<UserProfileEntity> query = entityManager.createNamedQuery("UserProfileEntity.findByUsername", UserProfileEntity.class);
+            query.setParameter("username", request.getGamerequestPK().getRequestingUser());
+            List<UserProfileEntity> results = query.getResultList();
+            UserProfileEntity user = results.get(0);           
+            if (user.getAvailable() && request.getGameID() == 0) { // the request still is valid and hasn't been asigned a game yet
+                GameEntity gameEntity = new GameEntity();
+                entityManager.persist(gameEntity);
+                entityManager.flush();
+                int gameID = gameEntity.getGameID();
+                request.setGameID(gameID);
+                game = new Game(gameEntity.getGameID());
+            }
+            entityManager.getTransaction().commit();
         }
         catch (Exception e) {
             throw e;
@@ -126,65 +134,77 @@ public class ChessDbController {
         return game;
     }
         
-    public Gamerequest whiteStartGame(String username) {
-        TypedQuery<Gamerequest> query = entityManager.createNamedQuery("Gamerequest.findByRequestingUser", Gamerequest.class);
-        query.setParameter("username", username);
-        List<Gamerequest> results = query.getResultList();
+    public GameRequest whiteStartGame(int userID) {
+        UserProfileEntity user = entityManager.find(UserProfileEntity.class, userID);
+        List<GameRequestEntity> requesterList = user.getRequesterGameList();
         
-        Gamerequest resultRequest = new Gamerequest(null,null); 
+        GameRequestEntity resultRequest = new GameRequestEntity(null,null); 
         resultRequest.setGameID(0);// game request with invalid gameID is returned to indicate no requests have been accepted
-        for (Gamerequest request: results) {
+        for (GameRequestEntity request: requesterList) {
             if (request.getGameID() > 0) {
                 entityManager.getTransaction().begin();
-                request = entityManager.find(Gamerequest.class, request.getGamerequestPK(), LockModeType.PESSIMISTIC_WRITE);
+                entityManager.lock(request, LockModeType.PESSIMISTIC_WRITE);
                 resultRequest.setGamerequestPK(request.getGamerequestPK());
                 resultRequest.setGameID(request.getGameID());
                 request.setGameID(-1);
-                User user = entityManager.find(User.class, request.getUser1().getUserID(), LockModeType.PESSIMISTIC_WRITE);
+                entityManager.lock(user, LockModeType.PESSIMISTIC_WRITE);
                 user.setAvailable(false);
-                user.getGamerequestList().forEach((gameR) -> {// remove all requests for this user from other users
+                user.getRequestedGameList().forEach((gameR) -> {// remove all requests for this user from other users
                     entityManager.remove(gameR);
                 });
-                user.getGamerequestList1().forEach((gameR) -> {// remove all of this users requests for other players
+                user.getRequesterGameList().forEach((gameR) -> {// remove all of this users requests for other players
                     entityManager.remove(gameR);
                 });
                 entityManager.getTransaction().commit();
                 break;
             }
         }
-        return resultRequest;
+        return new GameRequest(resultRequest);
     }
     
-    public Game blackStartGame(Gamerequest gameRequest) {
-        Game game = null;
+    public Game blackStartGame(GameRequest gameRequest) {
+        GameEntity gameEntity;
+        GameRequestPKEntity gameRequestPK = new GameRequestPKEntity(gameRequest.getRequestingUser(), gameRequest.getRequestedUser());
         entityManager.getTransaction().begin(); 
-        Gamerequest request = entityManager.find(Gamerequest.class, gameRequest.getGamerequestPK(), LockModeType.PESSIMISTIC_WRITE);
+        GameRequestEntity request = entityManager.find(GameRequestEntity.class, gameRequestPK, LockModeType.PESSIMISTIC_WRITE);
         if (request.getGameID() == -1) {
-            game = entityManager.find(Game.class, gameRequest.getGameID());
+            gameEntity = entityManager.find(GameEntity.class, gameRequest.getGameID());
             entityManager.remove(request);
-            User user = entityManager.find(User.class, gameRequest.getUser1().getUserID(),LockModeType.PESSIMISTIC_WRITE);
+            
+            TypedQuery<UserProfileEntity> query = entityManager.createNamedQuery("UserProfileEntity.findByUsername", UserProfileEntity.class);
+            query.setParameter("username", gameRequest.getRequestedUser());
+            List<UserProfileEntity> results = query.getResultList();
+            UserProfileEntity user = results.get(0);
+            entityManager.lock(user, LockModeType.PESSIMISTIC_WRITE);
             user.setAvailable(false);
-            user.getGamerequestList().forEach((gameR) -> { // remove all requests for this user from other users
+            user.getRequestedGameList().forEach((gameR) -> { // remove all requests for this user from other users
                 entityManager.remove(gameR);
             });
-            user.getGamerequestList1().forEach((gameR) -> {// remove all of this users requests for other players
+            user.getRequesterGameList().forEach((gameR) -> {// remove all of this users requests for other players
                 entityManager.remove(gameR);
             });           
         }
+        else 
+            return null;
         entityManager.getTransaction().commit();
-        return game;
+        return new Game(gameEntity.getGameID());
     }
     
-    public List<Gamerequest> getGameRequests(int userID) {
-        User user = entityManager.find(User.class, userID);
+    public UsernameList getGameRequests(int userID) {
+        UserProfileEntity user = entityManager.find(UserProfileEntity.class, userID);       
         if (user == null) // no such user exists
             return null;
-        else
-            return user.getGamerequestList();
+        else {
+            UsernameList requestingUsers = new UsernameList();
+            user.getRequestedGameList().forEach((request) -> {
+            requestingUsers.add(request.getGamerequestPK().getRequestingUser());
+            });
+            return requestingUsers;
+        }
     }
         
     public String getLastMove(Integer gameID) {
-        Game game = entityManager.find(Game.class, gameID);
+        GameEntity game = entityManager.find(GameEntity.class, gameID);
         if (game == null)
             return null;
         else
@@ -193,7 +213,7 @@ public class ChessDbController {
     
     public String makeMove(Integer gameID, String move) {
         entityManager.getTransaction().begin();
-        Game game = entityManager.find(Game.class, gameID, LockModeType.PESSIMISTIC_WRITE);
+        GameEntity game = entityManager.find(GameEntity.class, gameID, LockModeType.PESSIMISTIC_WRITE);
         if (game == null) {
             entityManager.getTransaction().commit();
             return null;
@@ -206,20 +226,21 @@ public class ChessDbController {
     
     public Game endGame(int gameID) {
         entityManager.getTransaction().begin();
-        Game game = entityManager.find(Game.class, gameID, LockModeType.PESSIMISTIC_WRITE);
+        GameEntity game = entityManager.find(GameEntity.class, gameID, LockModeType.PESSIMISTIC_WRITE);
         if (game == null) {
             entityManager.getTransaction().commit();
             return null;
         }
+        Game endedGame = new Game(game.getGameID());
         entityManager.remove(game);
         entityManager.getTransaction().commit();
         
-        return game;
+        return endedGame;
     }
     
     public String reset(int userID, String availability) {
         entityManager.getTransaction().begin();
-        User user = entityManager.find(User.class, userID, LockModeType.PESSIMISTIC_WRITE);
+        UserProfileEntity user = entityManager.find(UserProfileEntity.class, userID, LockModeType.PESSIMISTIC_WRITE);
         if (user == null)
             return null;
         if (availability.equals("onlyAvailable")) {
@@ -231,10 +252,10 @@ public class ChessDbController {
         else // "unavailable"
             user.setAvailable(false);
         
-        user.getGamerequestList().forEach((gameR) -> { // remove all requests for this user from other users
+        user.getRequestedGameList().forEach((gameR) -> { // remove all requests for this user from other users
             entityManager.remove(gameR);
         });
-        user.getGamerequestList1().forEach((gameR) -> {// remove all of this users requests for other players
+        user.getRequesterGameList().forEach((gameR) -> {// remove all of this users requests for other players
             entityManager.remove(gameR);
         });         
         
