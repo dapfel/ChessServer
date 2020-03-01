@@ -23,11 +23,11 @@ public class ChessDbController {
         TypedQuery<UserProfileEntity> query = entityManager.createNamedQuery("UserProfileEntity.findByUsername", UserProfileEntity.class);
         query.setParameter("username", username);
         List<UserProfileEntity> results = query.getResultList();
-        UserProfileEntity user = results.get(0);
-        if (user == null) {// no such user exists
+        if (results.isEmpty()) {// no such user exists
             entityManager.getTransaction().commit();
             return null;
         }
+        UserProfileEntity user = results.get(0);
         if (user.getPassword().equals(password)) {
            entityManager.getTransaction().commit();
            return new User(user);
