@@ -32,7 +32,7 @@ public class ChessDbController {
            entityManager.getTransaction().commit();
            return new User(user);
         }
-        else { // wrong password
+        else { // its wrong password
             entityManager.getTransaction().commit();
             return null;
         }
