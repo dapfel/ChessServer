@@ -119,7 +119,7 @@ public class ChessDbController {
             List<UserProfileEntity> results = query.getResultList();
             UserProfileEntity user = results.get(0);           
             if (user.getAvailable() && request.getGameID() == 0) { // the request still is valid and hasn't been asigned a game yet
-                GameEntity gameEntity = new GameEntity();
+                GameEntity gameEntity = new GameEntity(gameRequestPK);
                 entityManager.persist(gameEntity);
                 entityManager.flush();
                 int gameID = gameEntity.getGameID();
@@ -224,15 +224,40 @@ public class ChessDbController {
         return move;
     }
     
-    public Game endGame(int gameID) {
+    public Game endGame(int gameID, String winner) {
         entityManager.getTransaction().begin();
         GameEntity game = entityManager.find(GameEntity.class, gameID, LockModeType.PESSIMISTIC_WRITE);
         if (game == null) {
             entityManager.getTransaction().commit();
             return null;
         }
+        
+        TypedQuery<UserProfileEntity> query = entityManager.createNamedQuery("UserProfileEntity.findByUsername", UserProfileEntity.class);
+        query.setParameter("username", game.getPlayer1());
+        List<UserProfileEntity> results = query.getResultList();
+        UserProfileEntity player1 = results.get(0);
+        System.out.println(game.getPlayer1() + "  " + player1.getUsername() + player1.getWins());
+        entityManager.lock(player1, LockModeType.PESSIMISTIC_WRITE);
+        query.setParameter("username", game.getPlayer2());
+        results = query.getResultList();
+        UserProfileEntity player2 = results.get(0);
+        entityManager.lock(player2, LockModeType.PESSIMISTIC_WRITE);
+        if (player1.getUsername().equals(winner)) {
+            player1.setWins(player1.getWins() + 1);
+            player2.setLosses(player2.getLosses() + 1);
+        }
+        else if (player2.getUsername().equals(winner)) {
+            player2.setWins(player2.getWins() + 1);
+            player1.setLosses(player1.getLosses() + 1);
+        }
+        else {
+            player1.setDraws(player1.getWins() + 1);
+            player2.setDraws(player2.getLosses() + 1);
+        }       
+        
         Game endedGame = new Game(game.getGameID());
         entityManager.remove(game);
+        
         entityManager.getTransaction().commit();
         
         return endedGame;

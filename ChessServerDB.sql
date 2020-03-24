@@ -1,6 +1,7 @@
+DROP TABLE Game;
 DROP TABLE GameRequest;
 DROP TABLE UserProfile;
-DROP TABLE Game;
+
 
 CREATE TABLE UserProfile(
    UserID INT AUTO_INCREMENT,
@@ -16,7 +17,11 @@ CREATE TABLE UserProfile(
 CREATE TABLE Game (
    gameID INT AUTO_INCREMENT,
    move varchar (20),
-   PRIMARY KEY (gameID)
+   player1 varchar (40),
+   player2 varchar (40),
+   PRIMARY KEY (gameID),
+   FOREIGN KEY (player1) REFERENCES UserProfile (username),
+   FOREIGN KEY (player2) REFERENCES UserProfile (username)
 );
 
 CREATE TABLE GameRequest (

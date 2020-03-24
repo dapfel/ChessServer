@@ -51,9 +51,9 @@ public class GameResource {
     }
     
     @GET
-    @Path("{gameID}")
-    public String endGame(@PathParam("gameID") Integer gameID) {
-        Game game = chessDB.endGame(gameID);
+    @Path("{gameID}/{winner}")
+    public String endGame(@PathParam("gameID") Integer gameID, @PathParam("winner") String winner) {
+        Game game = chessDB.endGame(gameID, winner);
         chessDB.close();
         
         return new Gson().toJson(game);

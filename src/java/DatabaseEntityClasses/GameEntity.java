@@ -33,12 +33,19 @@ public class GameEntity implements Serializable {
     @Size(max = 20)
     @Column(name = "move")
     private String move;
+    @Size(max = 40)
+    @Column(name = "player1")
+    private String player1;
+    @Size(max = 40)
+    @Column(name = "player2")
+    private String player2;
 
     public GameEntity() {
     }
-
-    public GameEntity(Integer gameID) {
-        this.gameID = gameID;
+    
+    public GameEntity(GameRequestPKEntity gameRequestPK) {
+        player1 = gameRequestPK.getRequestingUser();
+        player2 = gameRequestPK.getRequestedUser();
     }
 
     public Integer getGameID() {
@@ -55,6 +62,22 @@ public class GameEntity implements Serializable {
 
     public void setMove(String move) {
         this.move = move;
+    }
+
+    public String getPlayer1() {
+        return player1;
+    }
+
+    public void setPlayer1(String player1) {
+        this.player1 = player1;
+    }
+
+    public String getPlayer2() {
+        return player2;
+    }
+
+    public void setPlayer2(String player2) {
+        this.player2 = player2;
     }
 
     @Override
